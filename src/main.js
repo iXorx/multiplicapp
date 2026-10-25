@@ -4,6 +4,7 @@ const STORAGE_KEY = 'zoo-de-taules.v1';
 const THEME_KEY = 'zoo-de-taules.theme';
 const FEED_COST = 5;
 const STREAK_FOR_STAR = 5;
+const CORRECT_ANSWER_ADVANCE_DELAY_MS = 900;
 const HUNGER_ERROR_THRESHOLD = 3;
 const MAP_PRACTICE_REQUIRED = 10;
 const MAP_LEVEL_KEYS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'all'];
@@ -49,21 +50,24 @@ const setup = {
   notice: document.querySelector('#save-notice'),
   questionPrompt: document.querySelector('#answer-prompt'),
   themeButton: document.querySelector('#theme-button'),
+  restartButton: document.querySelector('#restart-button'),
   mapToggleButton: document.querySelector('#map-toggle-button'),
   mapTimer: document.querySelector('#map-timer'),
   practiceGate: document.querySelector('#practice-gate'),
+  restartDialog: document.querySelector('#restart-dialog'),
   animalSelect: document.querySelector('#animal-select'),
 };
 
-let migratedAnimalNicknames = false;
+let migratedSavedState = false;
 let state = loadState();
 let currentTheme = loadTheme();
-if (migratedAnimalNicknames) saveState();
+if (migratedSavedState) saveState();
 let selectedTable = state.activePracticeLevel === 'all' ? 'all' : Number(state.activePracticeLevel) || 2;
 let currentQuestion = null;
 const askedQuestions = new Set();
 let answered = true;
 let questionStartedAt = 0;
+let questionAdvanceTimeout = 0;
 let shopPausedAt = 0;
 let shopIsOpen = false;
 let animalAnimationTimeout = 0;
@@ -84,8 +88,14 @@ function freshState() {
     wrongAnswers: 0,
     streak: 0,
     answers: 0,
-    animals: [],
-    nextAnimalId: 1,
+    animals: [{
+      id: 1,
+      species: 'conill',
+      nickname: nicknameFor('conill', 1),
+      fedAt: 0,
+      hungry: false,
+    }],
+    nextAnimalId: 2,
     meals: 0,
     mapPracticeByLevel: {},
     questionsAskedByLevel: {},
@@ -140,6 +150,22 @@ function loadState() {
           : [],
       ]),
     );
+    const animals = data.animals
+      .filter((animal) =>
+        animal && typeof animal.id === 'number' && ANIMALS.some((species) => species.species === animal.species),
+      )
+      .map((animal, index, entries) => {
+        const nicknameCount = entries.slice(0, index + 1).filter((entry) => entry.species === animal.species).length;
+        const nickname = typeof animal.nickname === 'string' ? animal.nickname.trim() : '';
+        const hasPlaceholderNickname = /^animal\s+\d+$/i.test(nickname);
+        if (hasPlaceholderNickname) migratedSavedState = true;
+        return {
+          ...animal,
+          hungry: Boolean(animal.hungry),
+          nickname: nickname && !hasPlaceholderNickname ? nickname : nicknameFor(animal.species, nicknameCount),
+        };
+      });
+    if (animals.length === 0) migratedSavedState = true;
     const loaded = {
       coins: Math.max(0, Math.floor(Number(data.coins) || 0)),
       stars: Math.max(0, Math.floor(Number(data.stars) || 0)),
@@ -148,22 +174,8 @@ function loadState() {
       wrongAnswers,
       streak: Math.max(0, Math.floor(Number(data.streak) || 0)),
       answers: Math.max(0, Math.floor(Number(data.answers) || 0)),
-      animals: data.animals
-        .filter((animal) =>
-          animal && typeof animal.id === 'number' && ANIMALS.some((species) => species.species === animal.species),
-        )
-        .map((animal, index, animals) => {
-          const nicknameCount = animals.slice(0, index + 1).filter((entry) => entry.species === animal.species).length;
-          const nickname = typeof animal.nickname === 'string' ? animal.nickname.trim() : '';
-          const hasPlaceholderNickname = /^animal\s+\d+$/i.test(nickname);
-          if (hasPlaceholderNickname) migratedAnimalNicknames = true;
-          return {
-            ...animal,
-            hungry: Boolean(animal.hungry),
-            nickname: nickname && !hasPlaceholderNickname ? nickname : nicknameFor(animal.species, nicknameCount),
-          };
-        }),
-      nextAnimalId: Math.max(1, Math.floor(Number(data.nextAnimalId) || 1)),
+      animals: animals.length > 0 ? animals : defaults.animals,
+      nextAnimalId: Math.max(defaults.nextAnimalId, Math.floor(Number(data.nextAnimalId) || 1)),
       meals: Math.max(0, Math.floor(Number(data.meals) || 0)),
       hungerProgress: Math.max(
         0,
@@ -199,9 +211,10 @@ function loadTheme() {
 function updateTheme() {
   document.documentElement.dataset.theme = currentTheme;
   document.querySelector('meta[name="theme-color"]').content = currentTheme === 'dark' ? '#111a17' : '#f6f3e9';
-  setup.themeButton.setAttribute('aria-label', `Canvia al mode ${currentTheme === 'dark' ? 'clar' : 'fosc'}`);
+  const themeLabel = `Canvia al mode ${currentTheme === 'dark' ? 'clar' : 'fosc'}`;
+  setup.themeButton.setAttribute('aria-label', themeLabel);
+  setup.themeButton.title = themeLabel;
   setup.themeButton.querySelector('[aria-hidden="true"]').textContent = currentTheme === 'dark' ? '☀️' : '🌙';
-  setup.themeButton.querySelector('.theme-label').textContent = currentTheme === 'dark' ? 'Mode clar' : 'Mode fosc';
 }
 
 function toggleTheme() {
@@ -403,14 +416,16 @@ function enterMap() {
 function finishMapSession() {
   if (!mapExpanded) return;
   closeMapSession();
-  setup.practiceGate.showModal();
+  showModal(setup.practiceGate, document.querySelector('#return-to-practice-button'));
 }
 
 function closeMapSession() {
   window.clearInterval(mapTimerInterval);
   window.clearTimeout(mapTimerTimeout);
+  window.clearTimeout(questionAdvanceTimeout);
   mapTimerInterval = 0;
   mapTimerTimeout = 0;
+  questionAdvanceTimeout = 0;
   if (!answered) questionStartedAt += Date.now() - mapOpenedAt;
   mapExpanded = false;
   shopIsOpen = false;
@@ -432,9 +447,64 @@ function collapseMapSession() {
 }
 
 function returnToPractice() {
-  setup.practiceGate.close();
+  hideModal(setup.practiceGate);
   setup.mapToggleButton.focus();
   if (answered) startNextQuestion();
+}
+
+function showModal(modal, initialFocus) {
+  modal.hidden = false;
+  initialFocus.focus();
+}
+
+function hideModal(modal) {
+  modal.hidden = true;
+}
+
+function restartGame() {
+  window.clearInterval(mapTimerInterval);
+  window.clearTimeout(mapTimerTimeout);
+  window.clearTimeout(questionAdvanceTimeout);
+  mapTimerInterval = 0;
+  mapTimerTimeout = 0;
+  questionAdvanceTimeout = 0;
+  mapExpanded = false;
+  mapOpenedAt = 0;
+  mapEndsAt = 0;
+  mapSessionLevel = null;
+  shopIsOpen = false;
+  shopPausedAt = 0;
+  questionStartedAt = 0;
+  state = freshState();
+  selectedTable = 2;
+  selectedAnimalSpecies = null;
+  currentQuestion = null;
+  answered = true;
+  askedQuestions.clear();
+  document.querySelector('.app').classList.remove('map-expanded');
+  setup.gameCard.classList.remove('is-question-active');
+  setup.mapTimer.hidden = true;
+  hideModal(setup.practiceGate);
+  hideModal(setup.restartDialog);
+  setup.questionFirst.textContent = '2';
+  setup.questionSecond.textContent = '3';
+  document.querySelector('#table-label').textContent = 'TRIA UNA TAULA';
+  setup.questionPrompt.textContent = 'Quan estiguis preparada, comencem!';
+  setup.feedback.textContent = '';
+  setup.feedback.className = 'feedback';
+  clearChildren(setup.answers);
+  document.querySelector('#coin-reward').hidden = true;
+  document.querySelector('#coin-reward').classList.remove('coin-reward-active');
+  setup.nextButton.innerHTML = 'Comencem! <span aria-hidden="true">→</span>';
+  setup.nextButton.hidden = false;
+  setup.selectedTables.forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.table === '2'));
+  });
+  saveState();
+  renderZoo();
+  renderShop();
+  updateMapControls();
+  setup.restartButton.focus();
 }
 
 function animalPrice(animal) {
@@ -512,6 +582,8 @@ function renderShop() {
 
 function renderQuestion() {
   setup.gameCard.classList.add('is-question-active');
+  setup.gameCard.classList.remove('is-round-complete');
+  document.querySelector('#quiz-help').textContent = 'Tria entre sis respostes: com més encerts seguits, més s’assemblen!';
   let practiceStarted = false;
   if (!state.activePracticeLevel) {
     state.activePracticeLevel = String(selectedTable);
@@ -705,17 +777,26 @@ function checkAnswer(answer, selectedButton) {
     && !state.activePracticeLevel
     && state.mapPracticeByLevel[practiceLevel] >= MAP_PRACTICE_REQUIRED;
   if (practiceLevelCompleted) {
-    setup.questionPrompt.textContent = 'Has acabat les 10 preguntes! Tria una altra taula o comença una nova ronda.';
-    setup.nextButton.textContent = 'Començar una altra ronda';
+    setup.gameCard.classList.remove('is-question-active');
+    setup.gameCard.classList.add('is-round-complete');
+    document.querySelector('#quiz-help').textContent = 'Has acabat la tanda de 10 preguntes! Tria una taula i comença una altra tanda.';
+    setup.nextButton.textContent = 'Comencem!';
     setup.nextButton.hidden = false;
+    setup.nextButton.focus();
+  } else if (answer === currentQuestion.result) {
+    setup.nextButton.textContent = 'Següent pregunta';
+    setup.nextButton.hidden = true;
+    questionAdvanceTimeout = window.setTimeout(startNextQuestion, CORRECT_ANSWER_ADVANCE_DELAY_MS);
   } else {
     setup.nextButton.textContent = 'Següent pregunta';
     setup.nextButton.hidden = false;
-    if (answer !== currentQuestion.result) setup.nextButton.focus();
+    setup.nextButton.focus();
   }
 }
 
 function startNextQuestion() {
+  window.clearTimeout(questionAdvanceTimeout);
+  questionAdvanceTimeout = 0;
   renderQuestion();
   setup.nextButton.hidden = true;
   const firstAnswer = setup.answers.querySelector('input, button');
@@ -771,11 +852,48 @@ setup.mapToggleButton.addEventListener('click', () => {
   else enterMap();
 });
 
-setup.practiceGate.addEventListener('cancel', (event) => {
-  event.preventDefault();
+document.querySelector('#restart-button').addEventListener('click', () => {
+  showModal(setup.restartDialog, document.querySelector('#cancel-restart-button'));
 });
 
+document.querySelector('#cancel-restart-button').addEventListener('click', () => {
+  hideModal(setup.restartDialog);
+  document.querySelector('#restart-button').focus();
+});
+
+document.querySelector('#confirm-restart-button').addEventListener('click', restartGame);
+
 document.querySelector('#return-to-practice-button').addEventListener('click', returnToPractice);
+
+document.addEventListener('keydown', (event) => {
+  const activeModal = [setup.practiceGate, setup.restartDialog].find((modal) => !modal.hidden);
+  if (!activeModal) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    if (activeModal === setup.restartDialog) {
+      hideModal(setup.restartDialog);
+      setup.restartButton.focus();
+    }
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const focusable = Array.prototype.slice.call(activeModal.querySelectorAll(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  ));
+  if (focusable.length === 0) {
+    event.preventDefault();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
 
 setup.selectedTables.forEach((button) => {
   button.addEventListener('click', () => {
@@ -788,7 +906,7 @@ setup.selectedTables.forEach((button) => {
     updateMapControls();
     if (state.mapPracticeByLevel[String(selectedTable)] >= MAP_PRACTICE_REQUIRED) {
       setup.nextButton.hidden = false;
-      setup.nextButton.textContent = 'Començar una altra ronda';
+      setup.nextButton.textContent = 'Comencem!';
     } else {
       setup.nextButton.hidden = false;
       setup.nextButton.textContent = 'Comencem!';

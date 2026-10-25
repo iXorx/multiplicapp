@@ -26,10 +26,12 @@
           <strong id="star-count">0</strong>
           <span>estrelles</span>
         </div>
-        <button id="theme-button" class="theme-button" type="button" aria-label="Canvia al mode clar">
-          <span aria-hidden="true">☀️</span>
-          <span class="theme-label">Mode clar</span>
-        </button>
+        <div class="topbar-actions">
+          <button id="theme-button" class="theme-button" type="button" aria-label="Canvia al mode clar" title="Canvia al mode clar">
+            <span aria-hidden="true">☀️</span>
+          </button>
+          <button id="restart-button" class="restart-button" type="button" aria-label="Nova partida" title="Nova partida">🔄</button>
+        </div>
       </header>
 
       <p id="save-notice" class="save-notice" role="status" hidden></p>
@@ -178,12 +180,25 @@
         <span>Aprendre i cuidar, quin gran pla! 🐒</span>
       </footer>
     </div>
-    <dialog id="practice-gate" class="practice-gate" aria-labelledby="practice-gate-title">
-      <span class="practice-gate-icon" aria-hidden="true">⏰</span>
-      <h2 id="practice-gate-title">S’ha acabat el temps del mapa!</h2>
-      <p>Per tornar a explorar, encerta 5 operacions més. Som-hi, a practicar!</p>
-      <button id="return-to-practice-button" class="primary-button" type="button">Tornar a practicar</button>
-    </dialog>
+    <div id="practice-gate" class="modal-overlay" hidden>
+      <section class="practice-gate" role="dialog" aria-modal="true" aria-labelledby="practice-gate-title" tabindex="-1">
+        <span class="practice-gate-icon" aria-hidden="true">⏰</span>
+        <h2 id="practice-gate-title">S’ha acabat el temps del mapa!</h2>
+        <p>Per tornar a explorar, encerta 5 operacions més. Som-hi, a practicar!</p>
+        <button id="return-to-practice-button" class="primary-button" type="button">Tornar a practicar</button>
+      </section>
+    </div>
+    <div id="restart-dialog" class="modal-overlay" hidden>
+      <section class="practice-gate" role="dialog" aria-modal="true" aria-labelledby="restart-dialog-title" tabindex="-1">
+        <span class="practice-gate-icon" aria-hidden="true">🔄</span>
+        <h2 id="restart-dialog-title">Reiniciar la partida?</h2>
+        <p>Es perdran els animals, les monedes, les estrelles i tot el progrés. Aquesta acció no es pot desfer.</p>
+        <div class="restart-dialog-actions">
+          <button id="cancel-restart-button" class="small-button" type="button">Cancel·la</button>
+          <button id="confirm-restart-button" class="restart-confirm-button" type="button">Sí, reinicia</button>
+        </div>
+      </section>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

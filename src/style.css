@@ -72,6 +72,13 @@ button {
   margin-bottom: 16px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+}
+
 .wallet {
   margin-left: auto;
 }
@@ -79,10 +86,10 @@ button {
 .theme-button {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  width: 40px;
   min-height: 40px;
-  margin-left: 10px;
-  padding: 7px 12px;
+  padding: 6px;
   border: 1px solid var(--line);
   border-radius: 12px;
   color: var(--ink);
@@ -430,6 +437,54 @@ main {
   margin-left: auto;
 }
 
+.restart-confirm-button {
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid #dfd5b8;
+  border-radius: 12px;
+  color: #79612e;
+  background: #fff9e9;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.restart-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-height: 40px;
+  padding: 6px;
+  flex: 0 0 auto;
+  border: 1px solid #dfd5b8;
+  border-radius: 12px;
+  color: #79612e;
+  background: #fff9e9;
+  font-size: 18px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.restart-confirm-button {
+  border-color: #bd6a5a;
+  color: #fff;
+  background: #a94334;
+}
+
+.restart-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.restart-dialog-actions .small-button {
+  margin: 0;
+}
+
 .zoo-count {
   flex: 0 0 auto;
   color: #5f6b60;
@@ -500,8 +555,32 @@ main {
   cursor: default;
 }
 
+.modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(5, 12, 9, 0.78);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
 .practice-gate {
   width: min(92vw, 420px);
+  max-height: 100%;
+  overflow-y: auto;
+  margin: auto;
   padding: 28px;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -509,11 +588,6 @@ main {
   background: var(--panel);
   text-align: center;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.3);
-}
-
-.practice-gate::backdrop {
-  background: rgba(5, 12, 9, 0.78);
-  backdrop-filter: blur(4px);
 }
 
 .practice-gate-icon {
@@ -784,8 +858,8 @@ main {
   cursor: default;
 }
 
-.answer-button:focus,
-.answer-submit:focus {
+.answer-button:focus-visible,
+.answer-submit:focus-visible {
   outline: none;
   border-color: #337348;
   box-shadow: 0 0 0 3px #337348;
@@ -901,6 +975,15 @@ main {
 
 .game-card.is-question-active .question {
   margin-top: 12px;
+}
+
+.game-card.is-round-complete .question,
+.game-card.is-round-complete .answer-prompt,
+.game-card.is-round-complete .answers,
+.game-card.is-round-complete .feedback,
+.game-card.is-round-complete .coin-reward,
+.game-card.is-round-complete .speed-legend {
+  display: none;
 }
 
 .shop-view {
@@ -1194,6 +1277,11 @@ main {
   background: #302a1e;
 }
 
+:root[data-theme='dark'] .restart-button {
+  border-color: #625234;
+  background: #302a1e;
+}
+
 :root[data-theme='dark'] .shop-button:disabled {
   border-color: #414840;
   color: #a8aca1;
@@ -1259,20 +1347,25 @@ main {
   color: #9aa99c;
 }
 
-:root[data-theme='dark'] button:focus,
-:root[data-theme='dark'] a:focus {
-  outline-color: #a9c6ff;
-}
-
-:root[data-theme='dark'] .answer-button:focus {
+:root[data-theme='dark'] .answer-button:focus-visible {
   border-color: #b3e1bc;
   box-shadow: 0 0 0 3px #b3e1bc;
 }
 
 button:focus,
 a:focus {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible {
   outline: 3px solid #768db2;
   outline-offset: 2px;
+}
+
+:root[data-theme='dark'] button:focus-visible,
+:root[data-theme='dark'] a:focus-visible {
+  outline-color: #a9c6ff;
 }
 
 [hidden] {
@@ -1459,17 +1552,6 @@ a:focus {
     font-size: 14px;
   }
 
-  .theme-button {
-    width: 40px;
-    justify-content: center;
-    margin-left: 7px;
-    padding: 6px;
-  }
-
-  .theme-label {
-    display: none;
-  }
-
   .zoo-card,
   .game-card {
     padding: 16px;
@@ -1524,7 +1606,7 @@ a:focus {
 @media (max-width: 420px) {
   .topbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 40px;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
   }
 
@@ -1539,12 +1621,11 @@ a:focus {
     margin-left: 0;
   }
 
-  .theme-button {
+  .topbar-actions {
     grid-column: 2;
     grid-row: 1;
-    width: 40px;
     margin-left: 0;
-    flex-shrink: 0;
+    gap: 6px;
   }
 }
 
