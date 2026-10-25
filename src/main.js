@@ -2,41 +2,40 @@ import './style.css';
 
 const STORAGE_KEY = 'zoo-de-taules.v1';
 const THEME_KEY = 'zoo-de-taules.theme';
-const SHOP_UNLOCK_POINTS = 60;
 const FEED_COST = 5;
-const ANIMAL_MILESTONE = 3;
+const STREAK_FOR_STAR = 5;
 const HUNGER_ERROR_THRESHOLD = 3;
 const MAP_PRACTICE_REQUIRED = 10;
 const MAP_LEVEL_KEYS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'all'];
 const MAP_DURATION_MS = 40_000;
 const ANIMALS = [
-  { species: 'conill', name: 'Conill', emoji: '🐰', home: 'Prat verd', habitat: 'meadow', nicknames: ['Pastanaguet', 'Saltiró', 'Bunyolet'] },
-  { species: 'tortuga', name: 'Tortuga', emoji: '🐢', home: 'Estany tranquil', habitat: 'lake', nicknames: ['Lenta McQueen', 'Closqueta', 'Turbo'] },
-  { species: 'guineu', name: 'Guineu', emoji: '🦊', home: 'Bosc petit', habitat: 'forest', nicknames: ['Guineuet', 'Cua-roja', 'Fox Mulder'] },
-  { species: 'elefant', name: 'Elefant', emoji: '🐘', home: 'Savana alegre', habitat: 'savanna', nicknames: ['Trompeta', 'Dumbolet', 'Mastegaxiclets'] },
-  { species: 'panda', name: 'Panda', emoji: '🐼', home: 'Bosc de bambú', habitat: 'forest', nicknames: ['Bambunet', 'Oreo', 'Panxeta'] },
-  { species: 'girafa', name: 'Girafa', emoji: '🦒', home: 'Savana alta', habitat: 'savanna', nicknames: ['Coll llarg', 'Semàfor', 'Torreta'] },
-  { species: 'lleo', name: 'Lleó', emoji: '🦁', home: 'Rocallosa', habitat: 'savanna', nicknames: ['Melena', 'Rei Mandrós', 'Lleonet'] },
-  { species: 'pingui', name: 'Pingüí', emoji: '🐧', home: 'Platja fresqueta', habitat: 'lake', nicknames: ['Patinets', 'Fracasset', 'Calfred'] },
-  { species: 'mico', name: 'Mico', emoji: '🐵', home: 'Bosc dels arbres', habitat: 'forest', nicknames: ['Pessigolles', 'Plàtanet', 'Trapezista'] },
-  { species: 'koala', name: 'Koala', emoji: '🐨', home: 'Bosc d’eucaliptus', habitat: 'forest', nicknames: ['Migdiades', 'Fullola', 'Koaleta'] },
-  { species: 'zebra', name: 'Zebra', emoji: '🦓', home: 'Savana ratllada', habitat: 'savanna', nicknames: ['Ratlles', 'Codi de barres', 'Pijama'] },
-  { species: 'hipopotam', name: 'Hipopòtam', emoji: '🐘', home: 'Riuet fresc', habitat: 'lake', nicknames: ['Hipo-potam', 'Banyetes', 'Xip-xap'] },
-  { species: 'cocodril', name: 'Cocodril', emoji: '🐊', home: 'Riba del llac', habitat: 'lake', nicknames: ['Cocodril·la', 'Dentetes', 'Somriures'] },
-  { species: 'flamenc', name: 'Flamenc', emoji: '🦆', home: 'Llac rosa', habitat: 'lake', nicknames: ['Cames llargues', 'Flamenqueta', 'Rosa Parks'] },
-  { species: 'lludria', name: 'Llúdria', emoji: '🐬', home: 'Riu juganer', habitat: 'lake', nicknames: ['Bombolles', 'Rellisca', 'Llu-drieta'] },
-  { species: 'peresos', name: 'Peresós', emoji: '🐒', home: 'Branques tranquil·les', habitat: 'forest', nicknames: ['Demà', 'Migdiada', 'Lentíssim'] },
-  { species: 'suricata', name: 'Suricata', emoji: '🐭', home: 'Prat vigilant', habitat: 'meadow', nicknames: ['Vigilet', 'Xafarder', 'Guaita'] },
-  { species: 'lloro', name: 'Lloro', emoji: '🐦', home: 'Bosc tropical', habitat: 'forest', nicknames: ['Xerrameca', 'Repetiti', 'A veure, a veure!'] },
-  { species: 'granota', name: 'Granota', emoji: '🐸', home: 'Estany dels salts', habitat: 'lake', nicknames: ['Croac Obama', 'Saltamarges', 'Granoteta'] },
-  { species: 'cervol', name: 'Cérvol', emoji: '🦌', home: 'Clariana del bosc', habitat: 'forest', nicknames: ['Banyetes', 'Saltabosc', 'Rudolfet'] },
-  { species: 'eriço', name: 'Eriçó', emoji: '🐻', home: 'Racó de fulles', habitat: 'forest', nicknames: ['Punxetes', 'Bolet', 'Pentinat'] },
-  { species: 'esquirol', name: 'Esquirol', emoji: '🐭', home: 'Alzinar', habitat: 'forest', nicknames: ['Ametlleta', 'Cua-bonica', 'Amaga-nous'] },
-  { species: 'camell', name: 'Camell', emoji: '🐫', home: 'Dunes daurades', habitat: 'savanna', nicknames: ['Gepet', 'Camel·lícia', 'Desertini'] },
-  { species: 'cangur', name: 'Cangur', emoji: '🐴', home: 'Prat saltador', habitat: 'meadow', nicknames: ['Butxaques', 'Saltamarges', 'Kangurú'] },
-  { species: 'paó', name: 'Paó', emoji: '🦃', home: 'Jardí reial', habitat: 'forest', nicknames: ['Pavoneig', 'Ventall', 'Sua majestat'] },
-  { species: 'gat', name: 'Gat', emoji: '🐱', home: 'Racó assolellat', habitat: 'meadow', nicknames: ['Smoke', 'Boleta', 'Miau'] },
-  { species: 'rata', name: 'Rata', emoji: '🐀', home: 'Raconet del bosc', habitat: 'forest', nicknames: ['Puchi', 'Rateta', 'Ratita'] },
+  { species: 'conill', name: 'Conill', size: 'medium', emoji: '🐰', home: 'Prat verd', habitat: 'meadow', nicknames: ['Pastanaguet', 'Saltiró', 'Bunyolet'] },
+  { species: 'tortuga', name: 'Tortuga', size: 'small', emoji: '🐢', home: 'Estany tranquil', habitat: 'lake', nicknames: ['Lenta McQueen', 'Closqueta', 'Turbo'] },
+  { species: 'guineu', name: 'Guineu', size: 'medium', emoji: '🦊', home: 'Bosc petit', habitat: 'forest', nicknames: ['Guineuet', 'Cua-roja', 'Fox Mulder'] },
+  { species: 'elefant', name: 'Elefant', size: 'large', emoji: '🐘', home: 'Savana alegre', habitat: 'savanna', nicknames: ['Trompeta', 'Dumbolet', 'Mastegaxiclets'] },
+  { species: 'panda', name: 'Panda', size: 'medium', emoji: '🐼', home: 'Bosc de bambú', habitat: 'forest', nicknames: ['Bambunet', 'Oreo', 'Panxeta'] },
+  { species: 'girafa', name: 'Girafa', size: 'large', emoji: '🦒', home: 'Savana alta', habitat: 'savanna', nicknames: ['Coll llarg', 'Semàfor', 'Torreta'] },
+  { species: 'lleo', name: 'Lleó', size: 'large', emoji: '🦁', home: 'Rocallosa', habitat: 'savanna', nicknames: ['Melena', 'Rei Mandrós', 'Lleonet'] },
+  { species: 'pingui', name: 'Pingüí', size: 'small', emoji: '🐧', home: 'Platja fresqueta', habitat: 'lake', nicknames: ['Patinets', 'Fracasset', 'Calfred'] },
+  { species: 'mico', name: 'Mico', size: 'small', emoji: '🐵', home: 'Bosc dels arbres', habitat: 'forest', nicknames: ['Pessigolles', 'Plàtanet', 'Trapezista'] },
+  { species: 'koala', name: 'Koala', size: 'small', emoji: '🐨', home: 'Bosc d’eucaliptus', habitat: 'forest', nicknames: ['Migdiades', 'Fullola', 'Koaleta'] },
+  { species: 'zebra', name: 'Zebra', size: 'large', emoji: '🦓', home: 'Savana ratllada', habitat: 'savanna', nicknames: ['Ratlles', 'Codi de barres', 'Pijama'] },
+  { species: 'hipopotam', name: 'Hipopòtam', size: 'large', emoji: '🐘', home: 'Riuet fresc', habitat: 'lake', nicknames: ['Hipo-potam', 'Banyetes', 'Xip-xap'] },
+  { species: 'cocodril', name: 'Cocodril', size: 'large', emoji: '🐊', home: 'Riba del llac', habitat: 'lake', nicknames: ['Cocodril·la', 'Dentetes', 'Somriures'] },
+  { species: 'flamenc', name: 'Flamenc', size: 'medium', emoji: '🦆', home: 'Llac rosa', habitat: 'lake', nicknames: ['Cames llargues', 'Flamenqueta', 'Rosa Parks'] },
+  { species: 'lludria', name: 'Llúdria', size: 'medium', emoji: '🐬', home: 'Riu juganer', habitat: 'lake', nicknames: ['Bombolles', 'Rellisca', 'Llu-drieta'] },
+  { species: 'peresos', name: 'Peresós', size: 'medium', emoji: '🐒', home: 'Branques tranquil·les', habitat: 'forest', nicknames: ['Demà', 'Migdiada', 'Lentíssim'] },
+  { species: 'suricata', name: 'Suricata', size: 'small', emoji: '🐭', home: 'Prat vigilant', habitat: 'meadow', nicknames: ['Vigilet', 'Xafarder', 'Guaita'] },
+  { species: 'lloro', name: 'Lloro', size: 'small', emoji: '🐦', home: 'Bosc tropical', habitat: 'forest', nicknames: ['Xerrameca', 'Repetiti', 'A veure, a veure!'] },
+  { species: 'granota', name: 'Granota', size: 'small', emoji: '🐸', home: 'Estany dels salts', habitat: 'lake', nicknames: ['Croac Obama', 'Saltamarges', 'Granoteta'] },
+  { species: 'cervol', name: 'Cérvol', size: 'medium', emoji: '🦌', home: 'Clariana del bosc', habitat: 'forest', nicknames: ['Banyetes', 'Saltabosc', 'Rudolfet'] },
+  { species: 'eriço', name: 'Eriçó', size: 'small', emoji: '🐻', home: 'Racó de fulles', habitat: 'forest', nicknames: ['Punxetes', 'Bolet', 'Pentinat'] },
+  { species: 'esquirol', name: 'Esquirol', size: 'small', emoji: '🐭', home: 'Alzinar', habitat: 'forest', nicknames: ['Ametlleta', 'Cua-bonica', 'Amaga-nous'] },
+  { species: 'camell', name: 'Camell', size: 'large', emoji: '🐫', home: 'Dunes daurades', habitat: 'savanna', nicknames: ['Gepet', 'Camel·lícia', 'Desertini'] },
+  { species: 'cangur', name: 'Cangur', size: 'medium', emoji: '🐴', home: 'Prat saltador', habitat: 'meadow', nicknames: ['Butxaques', 'Saltamarges', 'Kangurú'] },
+  { species: 'paó', name: 'Paó', size: 'medium', emoji: '🦃', home: 'Jardí reial', habitat: 'forest', nicknames: ['Pavoneig', 'Ventall', 'Sua majestat'] },
+  { species: 'gat', name: 'Gat', size: 'small', emoji: '🐱', home: 'Racó assolellat', habitat: 'meadow', nicknames: ['Smoke', 'Boleta', 'Miau'] },
+  { species: 'rata', name: 'Rata', size: 'small', emoji: '🐀', home: 'Raconet del bosc', habitat: 'forest', nicknames: ['Puchi', 'Rateta', 'Ratita'] },
 ];
 const setup = {
   answers: document.querySelector('#answers'),
@@ -53,10 +52,13 @@ const setup = {
   mapToggleButton: document.querySelector('#map-toggle-button'),
   mapTimer: document.querySelector('#map-timer'),
   practiceGate: document.querySelector('#practice-gate'),
+  animalSelect: document.querySelector('#animal-select'),
 };
 
+let migratedAnimalNicknames = false;
 let state = loadState();
 let currentTheme = loadTheme();
+if (migratedAnimalNicknames) saveState();
 let selectedTable = state.activePracticeLevel === 'all' ? 'all' : Number(state.activePracticeLevel) || 2;
 let currentQuestion = null;
 const askedQuestions = new Set();
@@ -70,12 +72,13 @@ let mapOpenedAt = 0;
 let mapEndsAt = 0;
 let mapTimerInterval = 0;
 let mapTimerTimeout = 0;
-let nextQuestionTimeout = 0;
 let mapSessionLevel = null;
+let selectedAnimalSpecies = null;
 
 function freshState() {
   return {
     coins: 0,
+    stars: 0,
     lifetimePoints: 0,
     correct: 0,
     wrongAnswers: 0,
@@ -83,8 +86,6 @@ function freshState() {
     answers: 0,
     animals: [],
     nextAnimalId: 1,
-    buildProgress: 0,
-    shopUnlocked: false,
     meals: 0,
     mapPracticeByLevel: {},
     questionsAskedByLevel: {},
@@ -141,6 +142,7 @@ function loadState() {
     );
     const loaded = {
       coins: Math.max(0, Math.floor(Number(data.coins) || 0)),
+      stars: Math.max(0, Math.floor(Number(data.stars) || 0)),
       lifetimePoints: Math.max(0, Math.floor(Number(data.lifetimePoints) || 0)),
       correct: Math.max(0, Math.floor(Number(data.correct) || 0)),
       wrongAnswers,
@@ -152,17 +154,16 @@ function loadState() {
         )
         .map((animal, index, animals) => {
           const nicknameCount = animals.slice(0, index + 1).filter((entry) => entry.species === animal.species).length;
+          const nickname = typeof animal.nickname === 'string' ? animal.nickname.trim() : '';
+          const hasPlaceholderNickname = /^animal\s+\d+$/i.test(nickname);
+          if (hasPlaceholderNickname) migratedAnimalNicknames = true;
           return {
             ...animal,
             hungry: Boolean(animal.hungry),
-            nickname: typeof animal.nickname === 'string' && animal.nickname.trim()
-              ? animal.nickname
-              : nicknameFor(animal.species, nicknameCount),
+            nickname: nickname && !hasPlaceholderNickname ? nickname : nicknameFor(animal.species, nicknameCount),
           };
         }),
       nextAnimalId: Math.max(1, Math.floor(Number(data.nextAnimalId) || 1)),
-      buildProgress: Math.max(0, Math.floor(Number(data.buildProgress) || 0)) % ANIMAL_MILESTONE,
-      shopUnlocked: Boolean(data.shopUnlocked),
       meals: Math.max(0, Math.floor(Number(data.meals) || 0)),
       hungerProgress: Math.max(
         0,
@@ -178,7 +179,6 @@ function loadState() {
         ? String(data.activePracticeLevel)
         : null,
     };
-    loaded.shopUnlocked = loaded.shopUnlocked || loaded.lifetimePoints >= SHOP_UNLOCK_POINTS;
     return Object.assign(defaults, loaded);
   } catch (error) {
     console.warn('No s’ha pogut llegir el progrés del zoo; se n’iniciarà un de nou.', error);
@@ -305,6 +305,7 @@ function createAnimalZone(animal) {
   const name = document.createElement('strong');
   name.className = 'animal-caption';
   name.textContent = animal.nickname;
+  name.title = animal.nickname;
   zone.appendChild(name);
 
   if (recentlyFed || animal.hungry) {
@@ -338,21 +339,14 @@ function renderZoo() {
   document.querySelector('#empty-zoo').hidden = state.animals.length > 0;
   document.querySelector('#animal-count').textContent = state.animals.length;
   document.querySelector('#animal-count-label').textContent = state.animals.length === 1 ? 'animal' : 'animals';
-  const remaining = state.buildProgress === 0 ? ANIMAL_MILESTONE : ANIMAL_MILESTONE - state.buildProgress;
-  document.querySelector('#build-count').textContent = `${state.buildProgress} / ${ANIMAL_MILESTONE}`;
-  document.querySelector('.progress-track').setAttribute('aria-valuenow', String(state.buildProgress));
-  document.querySelector('#progress-fill').style.width = `${state.buildProgress / ANIMAL_MILESTONE * 100}%`;
-  document.querySelector('#build-message').textContent = state.animals.length === 0 && state.buildProgress === 0
-    ? 'Contesta bé per construir el zoo'
-    : `Un nou animal després de ${remaining} ${remaining === 1 ? 'encert' : 'encerts'}`;
   updateMapControls();
 
   const description = document.querySelector('#zoo-description');
   description.textContent = state.animals.length === 0
-    ? 'Cada tres encerts, arriba un animal nou. Comencem a construir?'
+    ? 'Cada cinc respostes correctes seguides guanyes una estrella per adoptar un animal.'
     : state.animals.length === 1
-      ? 'Ja tens un animalet! Fes-li companyia i amplia el zoo.'
-      : `Ja tens ${state.animals.length} animalets! Fes-los companyia i amplia el zoo.`;
+      ? 'El teu animal passeja lliurement pel zoo. Adopta’n més amb estrelles!'
+      : `Els teus ${state.animals.length} animals passegen lliurement pel zoo. Adopta’n més amb estrelles!`;
   renderShop();
 }
 
@@ -388,10 +382,6 @@ function updateMapTimer() {
 function enterMap() {
   const level = String(selectedTable);
   if (mapExpanded || (state.mapPracticeByLevel[level] || 0) < MAP_PRACTICE_REQUIRED) return;
-  if (answered && nextQuestionTimeout) {
-    window.clearTimeout(nextQuestionTimeout);
-    nextQuestionTimeout = 0;
-  }
   mapExpanded = true;
   mapOpenedAt = Date.now();
   mapEndsAt = mapOpenedAt + MAP_DURATION_MS;
@@ -447,32 +437,47 @@ function returnToPractice() {
   if (answered) startNextQuestion();
 }
 
-function nextAnimalOffer() {
-  return ANIMALS[state.animals.length % ANIMALS.length];
-}
-
-function animalPrice() {
-  return 40 + state.animals.length * 25 + Math.floor(state.animals.length / 3) * 15;
+function animalPrice(animal) {
+  return { small: 1, medium: 2, large: 3 }[animal.size];
 }
 
 function renderShop() {
   document.querySelector('#coin-count').textContent = state.coins;
+  document.querySelector('#star-count').textContent = state.stars;
   document.querySelector('#streak-count').textContent = state.streak;
+  const streakProgress = state.streak % STREAK_FOR_STAR;
+  const remaining = STREAK_FOR_STAR - streakProgress;
+  document.querySelector('#build-count').textContent = `${streakProgress} / ${STREAK_FOR_STAR}`;
+  document.querySelector('.progress-track').setAttribute('aria-valuenow', String(streakProgress));
+  document.querySelector('#progress-fill').style.width = `${streakProgress / STREAK_FOR_STAR * 100}%`;
+  document.querySelector('#build-message').textContent = streakProgress === 0
+    ? 'Una estrella cada cinc encerts seguits'
+    : `Et falta ${remaining} ${remaining === 1 ? 'encert' : 'encerts'} per guanyar una estrella`;
 
   const button = document.querySelector('#open-shop-button');
   const label = document.querySelector('#shop-button-label');
   const lock = document.querySelector('#shop-lock');
-  button.disabled = !state.shopUnlocked;
-  lock.textContent = state.shopUnlocked ? '🛍️' : '🔒';
-  label.textContent = state.shopUnlocked
-    ? (shopIsOpen ? 'Torna al joc' : 'Visita la botiga')
-    : `Botiga · ${Math.max(0, SHOP_UNLOCK_POINTS - state.lifetimePoints)} monedes per obrir`;
+  button.disabled = false;
+  lock.textContent = shopIsOpen ? '↩️' : '🛍️';
+  label.textContent = shopIsOpen ? 'Torna al joc' : 'Adopta un animal';
   button.setAttribute('aria-expanded', String(shopIsOpen));
 
   const shop = document.querySelector('#shop-view');
-  shop.hidden = !mapExpanded || !shopIsOpen || !state.shopUnlocked;
-  const species = nextAnimalOffer();
-  const price = animalPrice();
+  shop.hidden = !mapExpanded || !shopIsOpen;
+  if (selectedAnimalSpecies === null) {
+    selectedAnimalSpecies = ANIMALS[state.animals.length % ANIMALS.length].species;
+  }
+  if (setup.animalSelect.options.length === 0) {
+    ANIMALS.forEach((animal) => {
+      const option = document.createElement('option');
+      option.value = animal.species;
+      option.textContent = `${animal.emoji} ${animal.name} · ${animalPrice(animal)} ⭐`;
+      setup.animalSelect.appendChild(option);
+    });
+  }
+  setup.animalSelect.value = selectedAnimalSpecies;
+  const species = animalFor(selectedAnimalSpecies);
+  const price = animalPrice(species);
   const offer = document.querySelector('#animal-offer');
   clearChildren(offer);
   const animalPreview = document.createElement('span');
@@ -484,16 +489,17 @@ function renderShop() {
   const copy = document.createElement('div');
   copy.className = 'offer-copy';
   const name = document.createElement('strong');
-  name.textContent = `Nova incorporació: ${species.name}`;
+  const sizeLabel = { small: 'petit', medium: 'mitjà', large: 'gran' }[species.size];
+  name.textContent = `${species.name} · ${sizeLabel}`;
   copy.appendChild(name);
   offer.appendChild(copy);
 
   const buy = document.createElement('button');
   buy.className = 'buy-button';
   buy.type = 'button';
-  buy.textContent = `${price} 🪙`;
-  buy.disabled = state.coins < price;
-  buy.setAttribute('aria-label', `Adoptar un altre ${species.name}, per ${price} monedes`);
+  buy.textContent = `${price} ⭐`;
+  buy.disabled = state.stars < price;
+  buy.setAttribute('aria-label', `Adoptar un ${species.name}, per ${price} ${price === 1 ? 'estrella' : 'estrelles'}`);
   buy.addEventListener('click', buyAnimal);
   offer.appendChild(buy);
 
@@ -540,37 +546,74 @@ function renderQuestion() {
   const questionIndex = Math.floor(Math.random() * availableQuestions.length);
   const { first, second, key } = availableQuestions[questionIndex];
   const result = first * second;
-  const options = [result];
-  const maximumDistance = Math.max(5, 12 - state.streak);
-  const distractors = [];
-  for (let value = Math.max(1, result - maximumDistance); value <= result + maximumDistance; value += 1) {
-    if (value !== result) distractors.push(value);
+  const requiresTypedAnswer = state.streak % STREAK_FOR_STAR === STREAK_FOR_STAR - 1;
+  const options = [];
+  if (!requiresTypedAnswer) {
+    options.push(result);
+    const maximumDistance = Math.max(5, 12 - state.streak);
+    const distractors = [];
+    for (let value = Math.max(1, result - maximumDistance); value <= result + maximumDistance; value += 1) {
+      if (value !== result) distractors.push(value);
+    }
+    while (options.length < 6) {
+      const index = Math.floor(Math.random() * distractors.length);
+      options.push(distractors.splice(index, 1)[0]);
+    }
+    options.sort(() => Math.random() - 0.5);
   }
-  while (options.length < 6) {
-    const index = Math.floor(Math.random() * distractors.length);
-    options.push(distractors.splice(index, 1)[0]);
-  }
-  options.sort(() => Math.random() - 0.5);
-  currentQuestion = { first, second, key, result, options };
+  currentQuestion = { first, second, key, result, options, requiresTypedAnswer };
   answered = false;
   questionStartedAt = Date.now();
   shopPausedAt = shopIsOpen ? questionStartedAt : 0;
   setup.questionFirst.textContent = first;
   setup.questionSecond.textContent = second;
   document.querySelector('#table-label').textContent = selectedTable === 'all' ? 'TAULES BARREJADES' : `TAULA DEL ${first}`;
-  setup.questionPrompt.textContent = 'Toca la resposta correcta!';
+  setup.questionPrompt.textContent = requiresTypedAnswer
+    ? 'Escriu el resultat i comprova’l!'
+    : 'Toca la resposta correcta!';
   setup.feedback.textContent = '';
   setup.feedback.className = 'feedback';
+  document.querySelector('#coin-reward').hidden = true;
+  document.querySelector('#coin-reward').classList.remove('coin-reward-active');
   clearChildren(setup.answers);
-  options.forEach((option) => {
-    const button = document.createElement('button');
-    button.className = 'answer-button';
-    button.type = 'button';
-    button.textContent = option;
-    button.setAttribute('aria-label', String(option));
-    button.addEventListener('click', () => checkAnswer(option, button));
-    setup.answers.appendChild(button);
-  });
+  if (requiresTypedAnswer) {
+    const input = document.createElement('input');
+    input.className = 'answer-input';
+    input.type = 'tel';
+    input.inputMode = 'numeric';
+    input.autocomplete = 'off';
+    input.setAttribute('aria-label', 'Escriu el resultat');
+    setup.answers.appendChild(input);
+
+    const submit = document.createElement('button');
+    submit.className = 'answer-button answer-submit';
+    submit.type = 'button';
+    submit.textContent = 'Comprova el resultat';
+    submit.addEventListener('click', () => {
+      const value = input.value.trim();
+      if (!/^\d+$/.test(value)) {
+        setup.feedback.textContent = 'Escriu el resultat amb xifres.';
+        setup.feedback.className = 'feedback feedback-incorrect';
+        input.focus();
+        return;
+      }
+      checkAnswer(Number(value), input);
+    });
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') submit.click();
+    });
+    setup.answers.appendChild(submit);
+  } else {
+    options.forEach((option) => {
+      const button = document.createElement('button');
+      button.className = 'answer-button';
+      button.type = 'button';
+      button.textContent = option;
+      button.setAttribute('aria-label', String(option));
+      button.addEventListener('click', () => checkAnswer(option, button));
+      setup.answers.appendChild(button);
+    });
+  }
   updateMapControls();
 }
 
@@ -599,8 +642,8 @@ function checkAnswer(answer, selectedButton) {
   }
   let zooNeedsRefresh = false;
   setup.gameCard.classList.remove('is-question-active');
-  setup.answers.querySelectorAll('button').forEach((button) => {
-    button.disabled = true;
+  setup.answers.querySelectorAll('button, input').forEach((control) => {
+    control.disabled = true;
   });
 
   if (answer === currentQuestion.result) {
@@ -615,15 +658,18 @@ function checkAnswer(answer, selectedButton) {
     selectedButton.classList.add('answer-correct');
     setup.feedback.textContent = `Molt bé! +${points} monedes${elapsedSeconds <= 2 ? ' · Quina rapidesa!' : ''} 🪙`;
     setup.feedback.className = 'feedback feedback-correct';
-    state.buildProgress += 1;
-    if (state.buildProgress >= ANIMAL_MILESTONE) {
-      const gained = makeAnimal(ANIMALS[Math.floor((state.correct - 1) / ANIMAL_MILESTONE) % ANIMALS.length].species);
-      state.buildProgress = 0;
-      setup.feedback.textContent += ` S’ha incorporat un animal nou: ${gained.nickname}!`;
-      if (gained.hungry) setup.feedback.textContent += ` ${gained.nickname} ja té gana!`;
+    const coinReward = document.querySelector('#coin-reward');
+    coinReward.hidden = true;
+    coinReward.classList.remove('coin-reward-active');
+    coinReward.textContent = `+${points} 🪙`;
+    void coinReward.offsetWidth;
+    coinReward.hidden = false;
+    coinReward.classList.add('coin-reward-active');
+    if (state.streak % STREAK_FOR_STAR === 0) {
+      state.stars += 1;
+      setup.feedback.textContent += ' Has guanyat una estrella! ⭐';
     }
-    if (state.lifetimePoints >= SHOP_UNLOCK_POINTS) state.shopUnlocked = true;
-    setup.questionPrompt.textContent = 'Molt bé! La següent pregunta ja ve...';
+    setup.questionPrompt.textContent = 'Molt bé! Llegeix el resultat i continua quan estiguis a punt.';
     saveState();
     renderZoo();
   } else {
@@ -662,23 +708,17 @@ function checkAnswer(answer, selectedButton) {
     setup.questionPrompt.textContent = 'Has acabat les 10 preguntes! Tria una altra taula o comença una nova ronda.';
     setup.nextButton.textContent = 'Començar una altra ronda';
     setup.nextButton.hidden = false;
-  } else if (answer === currentQuestion.result) {
-    setup.nextButton.hidden = true;
-    nextQuestionTimeout = window.setTimeout(() => {
-      nextQuestionTimeout = 0;
-      startNextQuestion();
-    }, 900);
   } else {
     setup.nextButton.textContent = 'Següent pregunta';
     setup.nextButton.hidden = false;
-    setup.nextButton.focus();
+    if (answer !== currentQuestion.result) setup.nextButton.focus();
   }
 }
 
 function startNextQuestion() {
   renderQuestion();
   setup.nextButton.hidden = true;
-  const firstAnswer = setup.answers.querySelector('button');
+  const firstAnswer = setup.answers.querySelector('input, button');
   if (firstAnswer) {
     firstAnswer.focus();
     setup.gameCard.scrollIntoView({
@@ -689,10 +729,10 @@ function startNextQuestion() {
 }
 
 function buyAnimal() {
-  const price = animalPrice();
-  if (state.coins < price) return;
-  const species = nextAnimalOffer();
-  state.coins -= price;
+  const species = animalFor(selectedAnimalSpecies);
+  const price = animalPrice(species);
+  if (state.stars < price) return;
+  state.stars -= price;
   const animal = makeAnimal(species.species);
   saveState();
   renderZoo();
@@ -761,7 +801,7 @@ setup.nextButton.addEventListener('click', () => {
 });
 
 document.querySelector('#open-shop-button').addEventListener('click', () => {
-  if (!mapExpanded || !state.shopUnlocked) return;
+  if (!mapExpanded) return;
   shopIsOpen = !shopIsOpen;
   if (!answered) {
     if (shopIsOpen) {
@@ -784,6 +824,11 @@ document.querySelector('#close-shop-button').addEventListener('click', () => {
   }
   renderShop();
   document.querySelector('#open-shop-button').focus();
+});
+
+setup.animalSelect.addEventListener('change', () => {
+  selectedAnimalSpecies = setup.animalSelect.value;
+  renderShop();
 });
 
 renderZoo();

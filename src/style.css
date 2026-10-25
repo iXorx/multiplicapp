@@ -102,12 +102,10 @@ button {
 }
 
 .brand-mark {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 12px;
-  color: white;
-  background: var(--green);
-  font-size: 24px;
+  display: block;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   margin-right: 10px;
 }
 
@@ -123,6 +121,14 @@ button {
 
 .wallet > * + * {
   margin-left: 6px;
+}
+
+.wallet-divider {
+  width: 1px;
+  height: 18px;
+  margin-right: 6px;
+  margin-left: 12px !important;
+  background: #d8d0bd;
 }
 
 .wallet strong {
@@ -142,9 +148,9 @@ button {
 
 main {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .zoo-card,
@@ -157,13 +163,32 @@ main {
 }
 
 .zoo-card {
-  padding: 25px;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: clamp(12px, 1.7vw, 20px);
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.game-card {
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .zoo-heading {
   justify-content: space-between;
   gap: 0;
-  margin-bottom: 17px;
+  margin-bottom: 10px;
+}
+
+.zoo-heading h1 {
+  font-size: clamp(18px, 2vw, 23px);
+}
+
+.zoo-description,
+.zoo-sparkle {
+  display: none;
 }
 
 .eyebrow {
@@ -198,11 +223,20 @@ main {
 
 .zoo-scene {
   position: relative;
-  min-height: 320px;
+  display: none;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid #c8e7cc;
   border-radius: 17px;
   background: #dff4e9;
+}
+
+.zoo-display {
+  display: flex;
+  min-height: 0;
+  height: min(55vh, 520px);
+  flex: 0 1 auto;
+  flex-direction: column;
 }
 
 .landscape {
@@ -235,83 +269,86 @@ main {
 }
 
 .animal-list {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  grid-template-rows: repeat(5, minmax(0, 1fr));
-  gap: 3px;
-  padding: 7px;
-  overflow: auto;
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 2px;
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.animal-list:empty::after {
+  align-self: center;
+  margin: auto;
+  color: var(--muted);
+  content: 'Encara no hi ha animals';
+  font-size: 13px;
+  text-align: center;
 }
 
 .map-animal {
   position: relative;
-  display: flex;
+  display: grid;
   align-items: center;
-  flex-direction: column;
-  justify-content: center;
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  border-radius: 12px;
-  background: rgba(255, 254, 249, 0.68);
-  text-align: center;
+  min-height: 44px;
+  flex: 0 0 44px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  column-gap: 6px;
+  align-content: center;
+  overflow: visible;
+  text-align: left;
   pointer-events: none;
 }
 
 .animal-avatar {
   display: block;
+  grid-column: 1;
+  grid-row: 1;
   font-family: -apple-system, BlinkMacSystemFont, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
-  font-size: clamp(25px, 4vw, 39px);
+  font-size: clamp(25px, 3vw, 34px);
   line-height: 1.15;
   animation: animal-bob 2.7s ease-in-out infinite;
 }
 
 .animal-caption {
+  grid-column: 2;
+  grid-row: 1;
   width: 100%;
+  min-width: 0;
   overflow: hidden;
-  margin-top: 1px;
+  margin: 0;
   padding: 0 2px;
-  color: #294735;
+  color: #1b2721;
   font-size: clamp(10px, 1.5vw, 14px);
   font-weight: 800;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 3px #f0f7dd, 0 0 5px #f0f7dd;
   white-space: nowrap;
 }
 
 .animal-speech {
-  position: absolute;
-  bottom: calc(100% - 2px);
-  left: 50%;
-  z-index: 2;
-  padding: 5px 8px;
-  border: 1px solid #75654d;
-  border-radius: 14px 14px 14px 5px;
-  color: #493c2b;
-  background: #fff9dc;
-  box-shadow: 0 2px 4px rgba(45, 56, 43, 0.22);
-  font-size: 14px;
+  position: static;
+  grid-column: 3;
+  grid-row: 1;
+  overflow: hidden;
+  padding: 2px 4px;
+  border-radius: 8px;
+  color: #74422c;
+  background: #fff0df;
+  font-size: 11px;
   font-weight: 800;
+  text-overflow: ellipsis;
+  transform: none;
   white-space: nowrap;
-  animation: speech-pop 220ms ease-out both;
-  transform: translateX(-50%);
 }
 
 .animal-speech::after {
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  width: 10px;
-  height: 10px;
-  border-right: 1px solid #75654d;
-  border-bottom: 1px solid #75654d;
-  background: #fff9dc;
-  content: '';
-  transform: translateX(-50%) rotate(45deg);
+  display: none;
 }
 
 .animal-moving .animal-avatar {
@@ -534,9 +571,50 @@ main {
   padding: clamp(14px, 2vw, 28px);
 }
 
-.app.map-expanded .zoo-scene {
+.app.map-expanded .zoo-display {
+  display: grid;
   min-height: 0;
   flex: 1;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+}
+
+.app.map-expanded .zoo-scene {
+  display: block;
+  min-height: 0;
+  flex: 4 1 0;
+}
+
+.app.map-expanded .animal-list {
+  flex: 1 1 0;
+  padding: 8px;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.app.map-expanded .map-animal {
+  min-height: 48px;
+  flex-basis: 48px;
+  grid-template-columns: 30px minmax(0, 1fr);
+  column-gap: 4px;
+}
+
+.app.map-expanded .animal-avatar {
+  font-size: clamp(20px, 3vw, 30px);
+}
+
+.app.map-expanded .animal-caption,
+.app.map-expanded .animal-speech {
+  grid-column: 2;
+}
+
+.app.map-expanded .animal-speech {
+  grid-row: 2;
+  justify-self: start;
+  max-width: 100%;
+}
+
+.app.map-expanded .animal-hungry .animal-speech {
+  grid-row: 2;
 }
 
 .app.map-expanded .shop-view {
@@ -676,29 +754,59 @@ main {
   touch-action: manipulation;
 }
 
-.answer-button:disabled {
-  cursor: default;
+.answer-input,
+.answer-submit {
+  grid-column: 1 / -1;
 }
 
-.answer-button:focus {
+.answer-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7dd;
+  border-radius: 13px;
+  color: #35483a;
+  background: var(--surface);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.answer-input:focus {
   outline: none;
   border-color: #337348;
   box-shadow: 0 0 0 3px #337348;
 }
 
-.answer-button.answer-correct {
+.answer-input:disabled,
+.answer-button:disabled {
+  cursor: default;
+}
+
+.answer-button:focus,
+.answer-submit:focus {
+  outline: none;
+  border-color: #337348;
+  box-shadow: 0 0 0 3px #337348;
+}
+
+.answer-button.answer-correct,
+.answer-input.answer-correct {
   border-color: #73c18a;
   color: #267344;
   background: #eaf7ec;
 }
 
-.answer-button.answer-incorrect {
+.answer-button.answer-incorrect,
+.answer-input.answer-incorrect {
   border-color: #e39c8c;
   color: #a94334;
   background: #fff0eb;
 }
 
 .feedback {
+  position: relative;
   min-height: 19px;
   margin: 10px 0 0;
   color: #5f6b60;
@@ -706,6 +814,28 @@ main {
   font-weight: 700;
   line-height: 1.5;
   text-align: center;
+}
+
+.coin-reward[hidden] {
+  display: none;
+}
+
+.coin-reward-active {
+  position: absolute;
+  top: -35px;
+  right: 0;
+  z-index: 1;
+  padding: 4px 9px;
+  border: 1px solid #e9dfc5;
+  border-radius: 16px;
+  color: #75551b;
+  background: #fffaf0;
+  box-shadow: 0 2px 7px rgba(45, 56, 43, 0.18);
+  font-size: 15px;
+  font-weight: 800;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: coin-reward-rise 1.4s ease-out both;
 }
 
 .feedback-correct {
@@ -872,6 +1002,26 @@ main {
   font-size: 14px;
 }
 
+.animal-select-label {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.animal-select {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 5px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+}
+
 .buy-button,
 .feed-button {
   flex: 0 0 auto;
@@ -979,7 +1129,8 @@ main {
 }
 
 :root[data-theme='dark'] .table-choice,
-:root[data-theme='dark'] .answer-button {
+:root[data-theme='dark'] .answer-button,
+:root[data-theme='dark'] .answer-input {
   border-color: #3a4a40;
   color: #e0ebe2;
 }
@@ -1008,13 +1159,15 @@ main {
   color: #a5b5a8;
 }
 
-:root[data-theme='dark'] .answer-button.answer-correct {
+:root[data-theme='dark'] .answer-button.answer-correct,
+:root[data-theme='dark'] .answer-input.answer-correct {
   border-color: #5aa575;
   color: #a9e5bb;
   background: #20392a;
 }
 
-:root[data-theme='dark'] .answer-button.answer-incorrect {
+:root[data-theme='dark'] .answer-button.answer-incorrect,
+:root[data-theme='dark'] .answer-input.answer-incorrect {
   border-color: #b87262;
   color: #f1b1a4;
   background: #402923;
@@ -1061,7 +1214,8 @@ main {
 
 :root[data-theme='dark'] .offer-copy strong,
 :root[data-theme='dark'] .animal-shop-title,
-:root[data-theme='dark'] .animal-name {
+:root[data-theme='dark'] .animal-name,
+:root[data-theme='dark'] .animal-caption {
   color: #e1ede3;
 }
 
@@ -1134,18 +1288,36 @@ a:focus {
   main {
     grid-template-columns: 1fr;
     gap: 13px;
-  }
-
-  .zoo-card {
-    padding: 20px;
-  }
-
-  .zoo-scene {
-    min-height: 290px;
+    align-items: start;
   }
 
   .game-card {
-    padding: 20px;
+    grid-column: 1;
+    grid-row: auto;
+    order: 1;
+  }
+
+  .zoo-card {
+    grid-column: 1;
+    grid-row: auto;
+    min-height: 0;
+    order: 2;
+    padding: 16px;
+  }
+
+  .app.map-expanded {
+    width: 100%;
+    padding: 10px 3%;
+  }
+
+  .zoo-display {
+    height: auto;
+    min-height: 0;
+    flex: 0 0 min(30vh, 220px);
+  }
+
+  .animal-list {
+    min-height: 100px;
   }
 
   .question {
@@ -1153,11 +1325,30 @@ a:focus {
   }
 }
 
-@media (orientation: landscape) {
+@media (orientation: portrait) {
+  .app.map-expanded .zoo-display {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 4fr) minmax(0, 1fr);
+  }
+
+  .app.map-expanded .zoo-scene {
+    flex: 4 1 0;
+  }
+
   .app.map-expanded .animal-list {
-    right: auto;
-    left: 50%;
-    width: 50%;
+    min-height: 0;
+    flex: 1 1 0;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .app.map-expanded .map-animal {
+    min-width: 104px;
+    min-height: 0;
+    flex: 0 0 104px;
   }
 }
 
@@ -1173,6 +1364,14 @@ a:focus {
 
   .app.map-expanded .zoo-card {
     padding: 8px;
+  }
+
+  .app.map-expanded .zoo-display {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+  }
+
+  .app.map-expanded .animal-list {
+    padding: 4px;
   }
 
   .app.map-expanded .zoo-heading {
@@ -1211,23 +1410,22 @@ a:focus {
   }
 
   .app.map-expanded .animal-caption {
-    display: none;
+    font-size: 8px;
   }
 }
 
 @media (min-width: 700px) and (max-width: 820px) {
   main {
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
-  .zoo-card,
   .game-card {
     padding: 18px;
   }
 
-  .zoo-scene {
-    min-height: 300px;
+  .zoo-card {
+    padding: 18px;
   }
 
   .table-picker {
@@ -1251,8 +1449,8 @@ a:focus {
   }
 
   .brand-mark {
-    padding: 4px 8px;
-    font-size: 20px;
+    width: 32px;
+    height: 32px;
   }
 
   .wallet {
@@ -1323,7 +1521,7 @@ a:focus {
 
 }
 
-@media (max-width: 380px) {
+@media (max-width: 420px) {
   .topbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 40px;
@@ -1363,6 +1561,10 @@ a:focus {
   .animal-speech {
     animation: none;
   }
+
+  .coin-reward-active {
+    animation: none;
+  }
 }
 
 @keyframes animal-bob {
@@ -1397,5 +1599,20 @@ a:focus {
   to {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes coin-reward-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+  }
+  20%, 65% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-19px) scale(0.94);
   }
 }

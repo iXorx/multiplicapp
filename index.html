@@ -14,13 +14,17 @@
     <div class="app">
       <header class="topbar">
         <a class="brand" href="#" aria-label="Multiplicapp, inici">
-          <span class="brand-mark" aria-hidden="true">✿</span>
+          <img class="brand-mark" src="%BASE_URL%favicon.svg" alt="" />
           <span>Multiplicapp</span>
         </a>
-        <div class="wallet" aria-label="Monedes disponibles">
-          <span aria-hidden="true">🪙</span>
+        <div class="wallet" aria-label="Monedes i estrelles disponibles">
+          <span aria-hidden="true">💰</span>
           <strong id="coin-count">0</strong>
           <span>monedes</span>
+          <span class="wallet-divider" aria-hidden="true"></span>
+          <span aria-hidden="true">⭐</span>
+          <strong id="star-count">0</strong>
+          <span>estrelles</span>
         </div>
         <button id="theme-button" class="theme-button" type="button" aria-label="Canvia al mode clar">
           <span aria-hidden="true">☀️</span>
@@ -35,48 +39,50 @@
           <div class="zoo-heading">
             <div>
               <p class="eyebrow">EL TEU PETIT RACÓ ANIMAL</p>
-              <h1 id="zoo-title">Benvinguda al zoo!</h1>
-              <p id="zoo-description" class="zoo-description">Cada tres encerts, arriba un animal nou. Comencem a construir?</p>
+              <h1 id="zoo-title">Els animals</h1>
+              <p id="zoo-description" class="zoo-description">Cada cinc respostes correctes seguides guanyes una estrella per adoptar un animal.</p>
             </div>
             <span class="zoo-sparkle" aria-hidden="true">✦</span>
           </div>
 
-          <div class="zoo-scene">
-            <svg class="landscape" viewBox="0 0 720 520" preserveAspectRatio="none" aria-hidden="true">
-              <rect width="720" height="520" fill="#dff4e9" />
-              <path d="M0 94Q130 12 278 77T540 64T720 41V520H0Z" fill="#bce5b7" />
-              <path d="M-26 270C131 172 160 386 322 279S526 174 746 313" fill="none" stroke="#f7edcf" stroke-width="44" stroke-linecap="round" />
-              <path d="M-26 270C131 172 160 386 322 279S526 174 746 313" fill="none" stroke="#e7d9b2" stroke-width="3" stroke-dasharray="8 12" stroke-linecap="round" />
-              <path d="M440 370c20-71 119-91 197-56 72 32 79 119 29 164-47 43-151 41-213 7-54-30-30-79-13-115Z" fill="#a8dce1" />
-              <path d="M464 365c41-39 106-45 159-23M479 438c42 18 97 17 134 0" fill="none" stroke="#e7ffff" stroke-width="5" stroke-linecap="round" opacity=".8" />
-              <g fill="#865d43">
-                <path d="M70 92h17v65H70z" /><path d="M625 96h18v67h-18z" />
-                <path d="M85 424h18v66H85z" /><path d="M194 101h13v48h-13z" />
-              </g>
-              <g fill="#43895b">
-                <circle cx="65" cy="75" r="27" /><circle cx="91" cy="62" r="31" /><circle cx="111" cy="82" r="26" />
-                <circle cx="617" cy="80" r="29" /><circle cx="648" cy="65" r="33" /><circle cx="675" cy="84" r="27" />
-                <circle cx="76" cy="413" r="30" /><circle cx="106" cy="399" r="31" /><circle cx="127" cy="424" r="27" />
-                <circle cx="182" cy="94" r="22" /><circle cx="204" cy="81" r="25" /><circle cx="223" cy="99" r="20" />
-              </g>
-              <g fill="#f4c663">
-                <circle cx="169" cy="112" r="5" /><circle cx="182" cy="122" r="4" /><circle cx="558" cy="119" r="5" />
-                <circle cx="545" cy="130" r="4" /><circle cx="420" cy="447" r="5" /><circle cx="435" cy="458" r="4" />
-              </g>
-            </svg>
-            <div id="empty-zoo" class="empty-zoo">
-              <span class="empty-zoo-icon" aria-hidden="true">🌱</span>
-              <span>El teu zoo comença aquí!</span>
+          <div class="zoo-display">
+            <div class="zoo-scene">
+              <svg class="landscape" viewBox="0 0 720 520" preserveAspectRatio="none" aria-hidden="true">
+                <rect width="720" height="520" fill="#dff4e9" />
+                <path d="M0 94Q130 12 278 77T540 64T720 41V520H0Z" fill="#bce5b7" />
+                <path d="M-26 270C131 172 160 386 322 279S526 174 746 313" fill="none" stroke="#f7edcf" stroke-width="44" stroke-linecap="round" />
+                <path d="M-26 270C131 172 160 386 322 279S526 174 746 313" fill="none" stroke="#e7d9b2" stroke-width="3" stroke-dasharray="8 12" stroke-linecap="round" />
+                <path d="M440 370c20-71 119-91 197-56 72 32 79 119 29 164-47 43-151 41-213 7-54-30-30-79-13-115Z" fill="#a8dce1" />
+                <path d="M464 365c41-39 106-45 159-23M479 438c42 18 97 17 134 0" fill="none" stroke="#e7ffff" stroke-width="5" stroke-linecap="round" opacity=".8" />
+                <g fill="#865d43">
+                  <path d="M70 92h17v65H70z" /><path d="M625 96h18v67h-18z" />
+                  <path d="M85 424h18v66H85z" /><path d="M194 101h13v48h-13z" />
+                </g>
+                <g fill="#43895b">
+                  <circle cx="65" cy="75" r="27" /><circle cx="91" cy="62" r="31" /><circle cx="111" cy="82" r="26" />
+                  <circle cx="617" cy="80" r="29" /><circle cx="648" cy="65" r="33" /><circle cx="675" cy="84" r="27" />
+                  <circle cx="76" cy="413" r="30" /><circle cx="106" cy="399" r="31" /><circle cx="127" cy="424" r="27" />
+                  <circle cx="182" cy="94" r="22" /><circle cx="204" cy="81" r="25" /><circle cx="223" cy="99" r="20" />
+                </g>
+                <g fill="#f4c663">
+                  <circle cx="169" cy="112" r="5" /><circle cx="182" cy="122" r="4" /><circle cx="558" cy="119" r="5" />
+                  <circle cx="545" cy="130" r="4" /><circle cx="420" cy="447" r="5" /><circle cx="435" cy="458" r="4" />
+                </g>
+              </svg>
+              <div id="empty-zoo" class="empty-zoo">
+                <span class="empty-zoo-icon" aria-hidden="true">🌱</span>
+                <span>El teu zoo comença aquí!</span>
+              </div>
             </div>
             <div id="animal-list" class="animal-list" aria-label="Animals del teu zoo"></div>
           </div>
 
           <div class="zoo-progress">
             <div class="progress-copy">
-              <span id="build-message">Contesta bé per construir el zoo</span>
-              <strong id="build-count">0 / 3</strong>
+              <span id="build-message">Una estrella cada cinc encerts seguits</span>
+              <strong id="build-count">0 / 5</strong>
             </div>
-            <div class="progress-track" role="progressbar" aria-label="Progrés per arribar al següent animal" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0">
+            <div class="progress-track" role="progressbar" aria-label="Progrés per guanyar una estrella" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
               <span id="progress-fill"></span>
             </div>
           </div>
@@ -85,7 +91,7 @@
             <div class="shop-heading">
               <div>
                 <p class="eyebrow">BOTIGA DEL ZOO</p>
-                <h2 id="shop-title">Un regal pels animals?</h2>
+                <h2 id="shop-title">Animals i menjar</h2>
               </div>
               <button id="close-shop-button" class="small-button" type="button">Torna al joc</button>
             </div>
@@ -99,9 +105,11 @@
             </div>
             <p id="shop-message" class="shop-message" aria-live="polite"></p>
             <div class="shop-divider"></div>
-            <h3 class="animal-shop-title">Més animals per al zoo</h3>
+            <h3 class="animal-shop-title">Adopta un animal</h3>
+            <label class="animal-select-label" for="animal-select">Tria quin animal vols adoptar</label>
+            <select id="animal-select" class="animal-select"></select>
             <div id="animal-offer" class="animal-offer"></div>
-            <p class="shop-footnote">Els animals que guanyes amb els encerts són gratis!</p>
+            <p class="shop-footnote">Els animals petits costen 1 estrella, els mitjans 2 i els grans 3. Guanya una estrella cada cinc respostes correctes seguides.</p>
             <div id="shop-animal-list" class="animal-shop-list" aria-label="Animals que pots alimentar"></div>
           </section>
 
@@ -153,6 +161,7 @@
           <p id="answer-prompt" class="answer-prompt">Quan estiguis preparada, comencem!</p>
           <div id="answers" class="answers" role="group" aria-label="Respostes possibles"></div>
           <p id="feedback" class="feedback" aria-live="polite"></p>
+          <span id="coin-reward" class="coin-reward" aria-hidden="true" hidden></span>
           <button id="next-button" class="primary-button" type="button">Comencem! <span aria-hidden="true">→</span></button>
           <div class="speed-legend">
             <span>⚡ 1-2 s: <strong>15</strong></span>
