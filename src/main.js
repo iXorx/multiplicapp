@@ -5,12 +5,14 @@ const THEME_KEY = 'zoo-de-taules.theme';
 const SHOP_UNLOCK_POINTS = 60;
 const FEED_COST = 5;
 const ANIMAL_MILESTONE = 3;
-const MAP_PRACTICE_REQUIRED = 5;
+const HUNGER_ERROR_THRESHOLD = 3;
+const MAP_PRACTICE_REQUIRED = 10;
+const MAP_LEVEL_KEYS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'all'];
 const MAP_DURATION_MS = 40_000;
 const ANIMALS = [
   { species: 'conill', name: 'Conill', emoji: '🐰', home: 'Prat verd', habitat: 'meadow', nicknames: ['Pastanaguet', 'Saltiró', 'Bunyolet'] },
   { species: 'tortuga', name: 'Tortuga', emoji: '🐢', home: 'Estany tranquil', habitat: 'lake', nicknames: ['Lenta McQueen', 'Closqueta', 'Turbo'] },
-  { species: 'guineu', name: 'Guineu', emoji: '🦊', home: 'Bosc petit', habitat: 'forest', nicknames: ['Furtallet', 'Cua-roja', 'Fox Mulder'] },
+  { species: 'guineu', name: 'Guineu', emoji: '🦊', home: 'Bosc petit', habitat: 'forest', nicknames: ['Guineuet', 'Cua-roja', 'Fox Mulder'] },
   { species: 'elefant', name: 'Elefant', emoji: '🐘', home: 'Savana alegre', habitat: 'savanna', nicknames: ['Trompeta', 'Dumbolet', 'Mastegaxiclets'] },
   { species: 'panda', name: 'Panda', emoji: '🐼', home: 'Bosc de bambú', habitat: 'forest', nicknames: ['Bambunet', 'Oreo', 'Panxeta'] },
   { species: 'girafa', name: 'Girafa', emoji: '🦒', home: 'Savana alta', habitat: 'savanna', nicknames: ['Coll llarg', 'Semàfor', 'Torreta'] },
@@ -38,10 +40,12 @@ const ANIMALS = [
 ];
 const setup = {
   answers: document.querySelector('#answers'),
+  gameCard: document.querySelector('.game-card'),
   questionFirst: document.querySelector('#question-first'),
   questionSecond: document.querySelector('#question-second'),
   feedback: document.querySelector('#feedback'),
   nextButton: document.querySelector('#next-button'),
+  tablePicker: document.querySelector('.table-picker'),
   selectedTables: Array.prototype.slice.call(document.querySelectorAll('.table-choice')),
   notice: document.querySelector('#save-notice'),
   questionPrompt: document.querySelector('#answer-prompt'),
@@ -53,8 +57,9 @@ const setup = {
 
 let state = loadState();
 let currentTheme = loadTheme();
-let selectedTable = 2;
+let selectedTable = state.activePracticeLevel === 'all' ? 'all' : Number(state.activePracticeLevel) || 2;
 let currentQuestion = null;
+const askedQuestions = new Set();
 let answered = true;
 let questionStartedAt = 0;
 let shopPausedAt = 0;
@@ -66,12 +71,14 @@ let mapEndsAt = 0;
 let mapTimerInterval = 0;
 let mapTimerTimeout = 0;
 let nextQuestionTimeout = 0;
+let mapSessionLevel = null;
 
 function freshState() {
   return {
     coins: 0,
     lifetimePoints: 0,
     correct: 0,
+    wrongAnswers: 0,
     streak: 0,
     answers: 0,
     animals: [],
@@ -79,7 +86,11 @@ function freshState() {
     buildProgress: 0,
     shopUnlocked: false,
     meals: 0,
-    mapPracticeProgress: 0,
+    mapPracticeByLevel: {},
+    questionsAskedByLevel: {},
+    activePracticeLevel: null,
+    hungerProgress: 0,
+    pendingHunger: 0,
   };
 }
 
@@ -105,10 +116,34 @@ function loadState() {
       throw new Error('Les dades del zoo no tenen el format esperat.');
     }
     const defaults = freshState();
+    const wrongAnswers = data.wrongAnswers === undefined
+      ? Math.max(0, Number(data.answers || 0) - Number(data.correct || 0))
+      : Math.max(0, Math.floor(Number(data.wrongAnswers) || 0));
+    const hasSavedQuestionSets = data.questionsAskedByLevel && typeof data.questionsAskedByLevel === 'object';
+    const mapPracticeByLevel = Object.fromEntries(
+      MAP_LEVEL_KEYS.map((level) => [
+        level,
+        hasSavedQuestionSets
+          ? Math.min(
+            MAP_PRACTICE_REQUIRED,
+            Math.max(0, Math.floor(Number(data.mapPracticeByLevel?.[level]) || 0)),
+          )
+          : 0,
+      ]),
+    );
+    const questionsAskedByLevel = Object.fromEntries(
+      MAP_LEVEL_KEYS.map((level) => [
+        level,
+        Array.isArray(data.questionsAskedByLevel?.[level])
+          ? [...new Set(data.questionsAskedByLevel[level].filter((key) => typeof key === 'string'))]
+          : [],
+      ]),
+    );
     const loaded = {
       coins: Math.max(0, Math.floor(Number(data.coins) || 0)),
       lifetimePoints: Math.max(0, Math.floor(Number(data.lifetimePoints) || 0)),
       correct: Math.max(0, Math.floor(Number(data.correct) || 0)),
+      wrongAnswers,
       streak: Math.max(0, Math.floor(Number(data.streak) || 0)),
       answers: Math.max(0, Math.floor(Number(data.answers) || 0)),
       animals: data.animals
@@ -119,6 +154,7 @@ function loadState() {
           const nicknameCount = animals.slice(0, index + 1).filter((entry) => entry.species === animal.species).length;
           return {
             ...animal,
+            hungry: Boolean(animal.hungry),
             nickname: typeof animal.nickname === 'string' && animal.nickname.trim()
               ? animal.nickname
               : nicknameFor(animal.species, nicknameCount),
@@ -128,10 +164,19 @@ function loadState() {
       buildProgress: Math.max(0, Math.floor(Number(data.buildProgress) || 0)) % ANIMAL_MILESTONE,
       shopUnlocked: Boolean(data.shopUnlocked),
       meals: Math.max(0, Math.floor(Number(data.meals) || 0)),
-      mapPracticeProgress: Math.min(
-        MAP_PRACTICE_REQUIRED,
-        Math.max(0, Math.floor(Number(data.mapPracticeProgress) || 0)),
+      hungerProgress: Math.max(
+        0,
+        Math.min(
+          HUNGER_ERROR_THRESHOLD - 1,
+          Math.floor(Number(data.hungerProgress) || wrongAnswers % HUNGER_ERROR_THRESHOLD),
+        ),
       ),
+      pendingHunger: Math.max(0, Math.floor(Number(data.pendingHunger) || 0)),
+      mapPracticeByLevel,
+      questionsAskedByLevel,
+      activePracticeLevel: hasSavedQuestionSets && MAP_LEVEL_KEYS.includes(String(data.activePracticeLevel))
+        ? String(data.activePracticeLevel)
+        : null,
     };
     loaded.shopUnlocked = loaded.shopUnlocked || loaded.lifetimePoints >= SHOP_UNLOCK_POINTS;
     return Object.assign(defaults, loaded);
@@ -196,7 +241,12 @@ function makeAnimal(species) {
     species,
     nickname: nicknameFor(species, nicknameCount),
     fedAt: 0,
+    hungry: false,
   };
+  if (state.pendingHunger > 0) {
+    animal.hungry = true;
+    state.pendingHunger -= 1;
+  }
   state.nextAnimalId += 1;
   state.animals.push(animal);
   return animal;
@@ -219,6 +269,12 @@ function createAnimalCard(animal, inShop) {
   card.appendChild(name);
 
   if (inShop) {
+    if (animal.hungry) {
+      const hungerStatus = document.createElement('span');
+      hungerStatus.className = 'animal-hunger-status';
+      hungerStatus.textContent = '🍽️ Tinc gana';
+      card.appendChild(hungerStatus);
+    }
     const feedButton = document.createElement('button');
     feedButton.className = 'feed-button';
     feedButton.type = 'button';
@@ -242,10 +298,12 @@ function createAnimalZone(animal, position) {
   const species = animalFor(animal.species);
   const zone = document.createElement('article');
   const recentlyFed = animal.fedAt && Date.now() - animal.fedAt < 1800;
-  zone.className = recentlyFed ? 'map-animal animal-moving' : 'map-animal';
+  zone.className = ['map-animal', recentlyFed ? 'animal-moving' : '', animal.hungry ? 'animal-hungry' : '']
+    .filter(Boolean)
+    .join(' ');
   zone.style.left = `${position[0]}%`;
   zone.style.top = `${position[1]}%`;
-  zone.setAttribute('aria-label', `${animal.nickname}, ${species.name}, a ${species.home}`);
+  zone.setAttribute('aria-label', `${animal.nickname}, ${species.name}, ${animal.hungry ? 'té gana' : `a ${species.home}`}`);
 
   const emoji = document.createElement('span');
   emoji.className = 'animal-avatar';
@@ -258,10 +316,10 @@ function createAnimalZone(animal, position) {
   name.textContent = animal.nickname;
   zone.appendChild(name);
 
-  if (recentlyFed) {
+  if (recentlyFed || animal.hungry) {
     const speech = document.createElement('span');
     speech.className = 'animal-speech';
-    speech.textContent = 'Nyam! Quin festí!';
+    speech.textContent = animal.hungry ? 'Tinc gana!' : 'Nyam! Quin festí!';
     zone.appendChild(speech);
   }
 
@@ -314,16 +372,26 @@ function renderZoo() {
 }
 
 function updateMapControls() {
-  const ready = state.mapPracticeProgress >= MAP_PRACTICE_REQUIRED;
-  setup.mapToggleButton.disabled = !mapExpanded && (!ready || answered);
+  const progress = state.mapPracticeByLevel[String(selectedTable)] || 0;
+  const ready = progress >= MAP_PRACTICE_REQUIRED;
+  setup.mapToggleButton.disabled = !mapExpanded && !ready;
   setup.mapToggleButton.setAttribute('aria-expanded', String(mapExpanded));
   document.querySelector('#map-toggle-icon').textContent = mapExpanded ? '↙️' : ready ? '🗺️' : '🔒';
   document.querySelector('#map-toggle-label').textContent = mapExpanded
     ? 'Torna a practicar'
     : ready
       ? 'Ampliar mapa'
-      : `Mapa · ${state.mapPracticeProgress}/${MAP_PRACTICE_REQUIRED}`;
+      : `Mapa · ${progress}/${MAP_PRACTICE_REQUIRED}`;
   document.querySelector('#open-shop-button').hidden = !mapExpanded;
+  updateTablePicker();
+}
+
+function updateTablePicker() {
+  const locked = mapExpanded || !answered || Boolean(state.activePracticeLevel);
+  setup.tablePicker.hidden = locked;
+  setup.selectedTables.forEach((button) => {
+    button.disabled = locked;
+  });
 }
 
 function updateMapTimer() {
@@ -333,7 +401,8 @@ function updateMapTimer() {
 }
 
 function enterMap() {
-  if (mapExpanded || answered || state.mapPracticeProgress < MAP_PRACTICE_REQUIRED) return;
+  const level = String(selectedTable);
+  if (mapExpanded || (state.mapPracticeByLevel[level] || 0) < MAP_PRACTICE_REQUIRED) return;
   if (answered && nextQuestionTimeout) {
     window.clearTimeout(nextQuestionTimeout);
     nextQuestionTimeout = 0;
@@ -341,8 +410,11 @@ function enterMap() {
   mapExpanded = true;
   mapOpenedAt = Date.now();
   mapEndsAt = mapOpenedAt + MAP_DURATION_MS;
+  mapSessionLevel = level;
   shopIsOpen = false;
-  state.mapPracticeProgress = 0;
+  state.mapPracticeByLevel[mapSessionLevel] = 0;
+  state.questionsAskedByLevel[mapSessionLevel] = [];
+  state.activePracticeLevel = null;
   saveState();
   document.querySelector('.app').classList.add('map-expanded');
   setup.mapTimer.hidden = false;
@@ -368,7 +440,8 @@ function closeMapSession() {
   mapExpanded = false;
   shopIsOpen = false;
   shopPausedAt = 0;
-  state.mapPracticeProgress = 0;
+  if (mapSessionLevel) state.mapPracticeByLevel[mapSessionLevel] = 0;
+  mapSessionLevel = null;
   document.querySelector('.app').classList.remove('map-expanded');
   setup.mapTimer.hidden = true;
   saveState();
@@ -447,9 +520,40 @@ function renderShop() {
 }
 
 function renderQuestion() {
-  const first = selectedTable === 'all' ? 2 + Math.floor(Math.random() * 9) : selectedTable;
-  const unlockedMultiplierCount = state.lifetimePoints >= 120 ? 10 : state.lifetimePoints >= 60 ? 8 : 5;
-  const second = 1 + Math.floor(Math.random() * unlockedMultiplierCount);
+  setup.gameCard.classList.add('is-question-active');
+  let practiceStarted = false;
+  if (!state.activePracticeLevel) {
+    state.activePracticeLevel = String(selectedTable);
+    if (state.mapPracticeByLevel[state.activePracticeLevel] >= MAP_PRACTICE_REQUIRED) {
+      state.mapPracticeByLevel[state.activePracticeLevel] = 0;
+    }
+    state.questionsAskedByLevel[state.activePracticeLevel] = [];
+    practiceStarted = true;
+  } else {
+    selectedTable = state.activePracticeLevel === 'all' ? 'all' : Number(state.activePracticeLevel);
+  }
+  if (practiceStarted) saveState();
+  askedQuestions.clear();
+  (state.questionsAskedByLevel[String(selectedTable)] || []).forEach((key) => askedQuestions.add(key));
+
+  const questions = [];
+  const questionKeys = new Set();
+  const firstTables = selectedTable === 'all' ? Array.from({ length: 9 }, (_, index) => index + 2) : [selectedTable];
+  firstTables.forEach((firstTable) => {
+    for (let multiplier = 1; multiplier <= 10; multiplier += 1) {
+      const key = `${Math.min(firstTable, multiplier)}x${Math.max(firstTable, multiplier)}`;
+      if (questionKeys.has(key)) continue;
+      questionKeys.add(key);
+      questions.push({ first: firstTable, second: multiplier, key });
+    }
+  });
+  let availableQuestions = questions.filter((question) => !askedQuestions.has(question.key));
+  if (availableQuestions.length === 0) {
+    askedQuestions.clear();
+    availableQuestions = questions;
+  }
+  const questionIndex = Math.floor(Math.random() * availableQuestions.length);
+  const { first, second, key } = availableQuestions[questionIndex];
   const result = first * second;
   const options = [result];
   const maximumDistance = Math.max(5, 12 - state.streak);
@@ -462,7 +566,7 @@ function renderQuestion() {
     options.push(distractors.splice(index, 1)[0]);
   }
   options.sort(() => Math.random() - 0.5);
-  currentQuestion = { first, second, result, options };
+  currentQuestion = { first, second, key, result, options };
   answered = false;
   questionStartedAt = Date.now();
   shopPausedAt = shopIsOpen ? questionStartedAt : 0;
@@ -496,6 +600,20 @@ function pointsForAnswer(seconds) {
 function checkAnswer(answer, selectedButton) {
   if (answered) return;
   answered = true;
+  const practiceLevel = state.activePracticeLevel || String(selectedTable);
+  if (!mapExpanded) {
+    askedQuestions.add(currentQuestion.key);
+    state.questionsAskedByLevel[practiceLevel] = Array.from(askedQuestions);
+    state.mapPracticeByLevel[practiceLevel] = Math.min(
+      MAP_PRACTICE_REQUIRED,
+      (state.mapPracticeByLevel[practiceLevel] || 0) + 1,
+    );
+    if (state.mapPracticeByLevel[practiceLevel] >= MAP_PRACTICE_REQUIRED) {
+      state.activePracticeLevel = null;
+    }
+  }
+  let zooNeedsRefresh = false;
+  setup.gameCard.classList.remove('is-question-active');
   setup.answers.querySelectorAll('button').forEach((button) => {
     button.disabled = true;
   });
@@ -507,9 +625,6 @@ function checkAnswer(answer, selectedButton) {
     state.correct += 1;
     state.streak += 1;
     state.answers += 1;
-    if (!mapExpanded) {
-      state.mapPracticeProgress = Math.min(MAP_PRACTICE_REQUIRED, state.mapPracticeProgress + 1);
-    }
     state.coins += points;
     state.lifetimePoints += points;
     selectedButton.classList.add('answer-correct');
@@ -520,6 +635,7 @@ function checkAnswer(answer, selectedButton) {
       const gained = makeAnimal(ANIMALS[Math.floor((state.correct - 1) / ANIMAL_MILESTONE) % ANIMALS.length].species);
       state.buildProgress = 0;
       setup.feedback.textContent += ` S’ha incorporat un animal nou: ${gained.nickname}!`;
+      if (gained.hungry) setup.feedback.textContent += ` ${gained.nickname} ja té gana!`;
     }
     if (state.lifetimePoints >= SHOP_UNLOCK_POINTS) state.shopUnlocked = true;
     setup.questionPrompt.textContent = 'Molt bé! La següent pregunta ja ve...';
@@ -528,18 +644,40 @@ function checkAnswer(answer, selectedButton) {
   } else {
     state.streak = 0;
     state.answers += 1;
+    state.wrongAnswers += 1;
+    state.hungerProgress += 1;
     selectedButton.classList.add('answer-incorrect');
     const correct = Array.prototype.slice.call(setup.answers.children).filter((button) => Number(button.textContent) === currentQuestion.result)[0];
     if (correct) correct.classList.add('answer-correct');
     setup.feedback.textContent = `Gairebé! Era ${currentQuestion.result}. No passa res, tornem-ho a provar!`;
     setup.feedback.className = 'feedback feedback-incorrect';
+    if (state.hungerProgress >= HUNGER_ERROR_THRESHOLD) {
+      state.hungerProgress -= HUNGER_ERROR_THRESHOLD;
+      const hungryAnimal = state.animals.find((animal) => !animal.hungry);
+      if (hungryAnimal) {
+        hungryAnimal.hungry = true;
+        zooNeedsRefresh = true;
+        setup.feedback.textContent += ` ${hungryAnimal.nickname} té gana! Dona-li menjar a la botiga.`;
+      } else {
+        state.pendingHunger += 1;
+        setup.feedback.textContent += ' El pròxim animal que arribi tindrà gana.';
+      }
+    }
     setup.questionPrompt.textContent = 'Aprendre també vol dir equivocar-se!';
     saveState();
   }
 
   updateMapControls();
-  renderShop();
-  if (answer === currentQuestion.result) {
+  if (zooNeedsRefresh) renderZoo();
+  else renderShop();
+  const practiceLevelCompleted = !mapExpanded
+    && !state.activePracticeLevel
+    && state.mapPracticeByLevel[practiceLevel] >= MAP_PRACTICE_REQUIRED;
+  if (practiceLevelCompleted) {
+    setup.questionPrompt.textContent = 'Has acabat les 10 preguntes! Tria una altra taula o comença una nova ronda.';
+    setup.nextButton.textContent = 'Començar una altra ronda';
+    setup.nextButton.hidden = false;
+  } else if (answer === currentQuestion.result) {
     setup.nextButton.hidden = true;
     nextQuestionTimeout = window.setTimeout(() => {
       nextQuestionTimeout = 0;
@@ -556,7 +694,13 @@ function startNextQuestion() {
   renderQuestion();
   setup.nextButton.hidden = true;
   const firstAnswer = setup.answers.querySelector('button');
-  if (firstAnswer) firstAnswer.focus();
+  if (firstAnswer) {
+    firstAnswer.focus();
+    setup.gameCard.scrollIntoView({
+      block: 'start',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  }
 }
 
 function buyAnimal() {
@@ -586,6 +730,7 @@ function feedAnimal(animalId) {
   state.coins -= FEED_COST;
   state.meals += 1;
   animal.fedAt = Date.now();
+  animal.hungry = false;
   saveState();
   renderZoo();
   document.querySelector('#shop-message').textContent = `${animal.nickname} està ben tip! Nyam!`;
@@ -609,12 +754,20 @@ document.querySelector('#return-to-practice-button').addEventListener('click', r
 
 setup.selectedTables.forEach((button) => {
   button.addEventListener('click', () => {
-    if (!answered) return;
+    if (!answered || state.activePracticeLevel || mapExpanded) return;
     selectedTable = button.dataset.table === 'all' ? 'all' : Number(button.dataset.table);
     setup.selectedTables.forEach((choice) => {
       choice.setAttribute('aria-pressed', String(choice === button));
     });
     document.querySelector('#table-label').textContent = selectedTable === 'all' ? 'TAULES BARREJADES' : `TAULA DEL ${selectedTable}`;
+    updateMapControls();
+    if (state.mapPracticeByLevel[String(selectedTable)] >= MAP_PRACTICE_REQUIRED) {
+      setup.nextButton.hidden = false;
+      setup.nextButton.textContent = 'Començar una altra ronda';
+    } else {
+      setup.nextButton.hidden = false;
+      setup.nextButton.textContent = 'Comencem!';
+    }
   });
 });
 
@@ -651,3 +804,7 @@ document.querySelector('#close-shop-button').addEventListener('click', () => {
 renderZoo();
 renderShop();
 updateTheme();
+setup.selectedTables.forEach((button) => {
+  const table = button.dataset.table === 'all' ? 'all' : Number(button.dataset.table);
+  button.setAttribute('aria-pressed', String(table === selectedTable));
+});
