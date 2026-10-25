@@ -21,21 +21,21 @@ const ANIMALS = [
   { species: 'mico', name: 'Mico', emoji: '🐵', home: 'Bosc dels arbres', habitat: 'forest', nicknames: ['Pessigolles', 'Plàtanet', 'Trapezista'] },
   { species: 'koala', name: 'Koala', emoji: '🐨', home: 'Bosc d’eucaliptus', habitat: 'forest', nicknames: ['Migdiades', 'Fullola', 'Koaleta'] },
   { species: 'zebra', name: 'Zebra', emoji: '🦓', home: 'Savana ratllada', habitat: 'savanna', nicknames: ['Ratlles', 'Codi de barres', 'Pijama'] },
-  { species: 'hipopotam', name: 'Hipopòtam', emoji: '🦛', home: 'Riuet fresc', habitat: 'lake', nicknames: ['Hipo-potam', 'Banyetes', 'Xip-xap'] },
+  { species: 'hipopotam', name: 'Hipopòtam', emoji: '🐘', home: 'Riuet fresc', habitat: 'lake', nicknames: ['Hipo-potam', 'Banyetes', 'Xip-xap'] },
   { species: 'cocodril', name: 'Cocodril', emoji: '🐊', home: 'Riba del llac', habitat: 'lake', nicknames: ['Cocodril·la', 'Dentetes', 'Somriures'] },
-  { species: 'flamenc', name: 'Flamenc', emoji: '🦩', home: 'Llac rosa', habitat: 'lake', nicknames: ['Cames llargues', 'Flamenqueta', 'Rosa Parks'] },
-  { species: 'lludria', name: 'Llúdria', emoji: '🦦', home: 'Riu juganer', habitat: 'lake', nicknames: ['Bombolles', 'Rellisca', 'Llu-drieta'] },
-  { species: 'peresos', name: 'Peresós', emoji: '🦥', home: 'Branques tranquil·les', habitat: 'forest', nicknames: ['Demà', 'Migdiada', 'Lentíssim'] },
-  { species: 'suricata', name: 'Suricata', emoji: '🐿️', home: 'Prat vigilant', habitat: 'meadow', nicknames: ['Vigilet', 'Xafarder', 'Guaita'] },
-  { species: 'lloro', name: 'Lloro', emoji: '🦜', home: 'Bosc tropical', habitat: 'forest', nicknames: ['Xerrameca', 'Repetiti', 'A veure, a veure!'] },
+  { species: 'flamenc', name: 'Flamenc', emoji: '🦆', home: 'Llac rosa', habitat: 'lake', nicknames: ['Cames llargues', 'Flamenqueta', 'Rosa Parks'] },
+  { species: 'lludria', name: 'Llúdria', emoji: '🐬', home: 'Riu juganer', habitat: 'lake', nicknames: ['Bombolles', 'Rellisca', 'Llu-drieta'] },
+  { species: 'peresos', name: 'Peresós', emoji: '🐒', home: 'Branques tranquil·les', habitat: 'forest', nicknames: ['Demà', 'Migdiada', 'Lentíssim'] },
+  { species: 'suricata', name: 'Suricata', emoji: '🐭', home: 'Prat vigilant', habitat: 'meadow', nicknames: ['Vigilet', 'Xafarder', 'Guaita'] },
+  { species: 'lloro', name: 'Lloro', emoji: '🐦', home: 'Bosc tropical', habitat: 'forest', nicknames: ['Xerrameca', 'Repetiti', 'A veure, a veure!'] },
   { species: 'granota', name: 'Granota', emoji: '🐸', home: 'Estany dels salts', habitat: 'lake', nicknames: ['Croac Obama', 'Saltamarges', 'Granoteta'] },
   { species: 'cervol', name: 'Cérvol', emoji: '🦌', home: 'Clariana del bosc', habitat: 'forest', nicknames: ['Banyetes', 'Saltabosc', 'Rudolfet'] },
-  { species: 'eriço', name: 'Eriçó', emoji: '🦔', home: 'Racó de fulles', habitat: 'forest', nicknames: ['Punxetes', 'Bolet', 'Pentinat'] },
-  { species: 'esquirol', name: 'Esquirol', emoji: '🐿️', home: 'Alzinar', habitat: 'forest', nicknames: ['Ametlleta', 'Cua-bonica', 'Amaga-nous'] },
+  { species: 'eriço', name: 'Eriçó', emoji: '🐻', home: 'Racó de fulles', habitat: 'forest', nicknames: ['Punxetes', 'Bolet', 'Pentinat'] },
+  { species: 'esquirol', name: 'Esquirol', emoji: '🐭', home: 'Alzinar', habitat: 'forest', nicknames: ['Ametlleta', 'Cua-bonica', 'Amaga-nous'] },
   { species: 'camell', name: 'Camell', emoji: '🐫', home: 'Dunes daurades', habitat: 'savanna', nicknames: ['Gepet', 'Camel·lícia', 'Desertini'] },
-  { species: 'cangur', name: 'Cangur', emoji: '🦘', home: 'Prat saltador', habitat: 'meadow', nicknames: ['Butxaques', 'Saltamarges', 'Kangurú'] },
-  { species: 'paó', name: 'Paó', emoji: '🦚', home: 'Jardí reial', habitat: 'forest', nicknames: ['Pavoneig', 'Ventall', 'Sua majestat'] },
-  { species: 'gat', name: 'Gat', emoji: '🐈', home: 'Racó assolellat', habitat: 'meadow', nicknames: ['Smoke', 'Boleta', 'Miau'] },
+  { species: 'cangur', name: 'Cangur', emoji: '🐴', home: 'Prat saltador', habitat: 'meadow', nicknames: ['Butxaques', 'Saltamarges', 'Kangurú'] },
+  { species: 'paó', name: 'Paó', emoji: '🦃', home: 'Jardí reial', habitat: 'forest', nicknames: ['Pavoneig', 'Ventall', 'Sua majestat'] },
+  { species: 'gat', name: 'Gat', emoji: '🐱', home: 'Racó assolellat', habitat: 'meadow', nicknames: ['Smoke', 'Boleta', 'Miau'] },
   { species: 'rata', name: 'Rata', emoji: '🐀', home: 'Raconet del bosc', habitat: 'forest', nicknames: ['Puchi', 'Rateta', 'Ratita'] },
 ];
 const setup = {
@@ -287,22 +287,13 @@ function createAnimalCard(animal, inShop) {
   return card;
 }
 
-const HABITAT_POSITIONS = {
-  meadow: [[29, 51], [41, 66], [19, 64], [38, 39], [47, 53]],
-  lake: [[57, 66], [92, 66], [57, 89], [92, 89]],
-  forest: [[21, 32], [80, 30], [24, 71], [37, 35], [88, 58], [39, 73]],
-  savanna: [[55, 46], [68, 57], [49, 68], [62, 34], [88, 43]],
-};
-
-function createAnimalZone(animal, position) {
+function createAnimalZone(animal) {
   const species = animalFor(animal.species);
   const zone = document.createElement('article');
   const recentlyFed = animal.fedAt && Date.now() - animal.fedAt < 1800;
   zone.className = ['map-animal', recentlyFed ? 'animal-moving' : '', animal.hungry ? 'animal-hungry' : '']
     .filter(Boolean)
     .join(' ');
-  zone.style.left = `${position[0]}%`;
-  zone.style.top = `${position[1]}%`;
   zone.setAttribute('aria-label', `${animal.nickname}, ${species.name}, ${animal.hungry ? 'té gana' : `a ${species.home}`}`);
 
   const emoji = document.createElement('span');
@@ -334,14 +325,8 @@ function renderZoo() {
   const animalList = document.querySelector('#animal-list');
   clearChildren(animalList);
   window.clearTimeout(animalAnimationTimeout);
-  const habitatCounts = { meadow: 0, lake: 0, forest: 0, savanna: 0 };
   state.animals.forEach((animal) => {
-    const habitat = animalFor(animal.species).habitat;
-    const positions = HABITAT_POSITIONS[habitat];
-    const position = positions[habitatCounts[habitat] % positions.length];
-    const repeatOffset = Math.floor(habitatCounts[habitat] / positions.length) * 4;
-    habitatCounts[habitat] += 1;
-    animalList.appendChild(createAnimalZone(animal, [Math.min(94, position[0] + repeatOffset), position[1]]));
+    animalList.appendChild(createAnimalZone(animal));
   });
   const nextFeedExpiry = state.animals
     .filter((animal) => animal.fedAt && Date.now() - animal.fedAt < 1800)
